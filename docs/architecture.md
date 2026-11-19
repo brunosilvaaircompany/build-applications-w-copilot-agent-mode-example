@@ -43,19 +43,17 @@ flowchart LR
 
 ## Decisões de implementação
 
-Registre seu plano aqui antes de editar o código.
-
-- Decisão da camada de apresentação:
-- Decisão da camada de lógica:
-- Decisão da camada de dados:
-- Abordagem para registro de atividades:
-- Abordagem para gerenciamento de equipes:
-- Abordagem para o placar:
-- Abordagem para sugestões de treino:
+- Decisão da camada de apresentação: cada rota carrega sua coleção pela API usando o `getJson` compartilhado e apresenta estados acessíveis de carregamento, vazio, sucesso e erro em português.
+- Decisão da camada de lógica: serviços Express validam entradas e referências antes de gravar; erros de entrada e de registros ausentes usam respostas 4xx.
+- Decisão da camada de dados: esquemas Mongoose exigem os campos essenciais e limitam valores de domínio; o seed existente mantém fixtures idempotentes com upserts.
+- Abordagem para registro de atividades: validar IDs e tipo, exigir minutos inteiros positivos e referências existentes; calcular pontos pelos minutos e registrar a data atual.
+- Abordagem para gerenciamento de equipes: exigir nome e mascote, validar os IDs dos integrantes e manter a lista vazia quando não informada.
+- Abordagem para o placar: somar os pontos das atividades por equipe e ordenar em ordem decrescente, atribuindo posições iniciadas em 1.
+- Abordagem para sugestões de treino: usar a atividade mais recente para escolher o foco, recorrer à meta da pessoa quando não houver atividade compatível e explicar a recomendação em português.
 
 ## Plano de testes
 
-Registre os comandos executados e o significado de cada falha.
+Na linha de base, os contratos de dados tiveram quatro falhas por campos Mongoose opcionais e a interface teve 15 falhas porque as rotas ainda exibiam o estado pendente. A seed de demonstração já passou pelo contrato de idempotência e preservação de registros. Na validação final, os contratos de dados, API e frontend passaram; os comandos de compilação estão registrados em `docs/hands-on-implementation.md`.
 
 - Testes da camada de dados: `npm run test:data --prefix octofit-tracker/backend`
 - Testes da API: `npm run test:api --prefix octofit-tracker/backend`

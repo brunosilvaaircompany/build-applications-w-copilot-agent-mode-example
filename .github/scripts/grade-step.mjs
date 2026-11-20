@@ -32,6 +32,16 @@ export function verifyContracts(root) {
 function tool(root, app, binary, args) {
   verifyContracts(root);
   const cwd = path.join(root, 'octofit-tracker', app);
+  if (process.platform === 'win32') {
+    const entrypoints = {
+      vitest: ['vitest', 'vitest.mjs'],
+      tsc: ['typescript', 'bin', 'tsc'],
+      vite: ['vite', 'bin', 'vite.js'],
+    }[binary];
+    assertValid(entrypoints, `No Windows entrypoint is configured for ${binary}`);
+    execFileSync(process.execPath, [path.join(cwd, 'node_modules', ...entrypoints), ...args], { cwd, stdio: 'inherit' });
+    return;
+  }
   execFileSync(path.join(cwd, 'node_modules', '.bin', binary), args, { cwd, stdio: 'inherit' });
 }
 const contractRuns = {
@@ -69,7 +79,7 @@ export const checks = {
     assertValid(!/deleteMany\s*\(\s*\{\s*\}\s*\)/.test(seed), 'Seed script must not clear unrelated application records');
     assertValid(readJson(root, 'octofit-tracker/backend/package.json').scripts?.seed, 'Backend package.json must define an npm run seed script');
     const tests = readText(root, 'octofit-tracker/backend/tests/data.contract.test.ts');
-    containsAll(tests, ['seed\\(\\)', 'idempotently', 'sentinel'], 'Seed contract test');
+    containsAll(tests, ['seed\\(\\)', 'idempotently|idempotente', 'sentinel'], 'Seed contract test');
   },
   'step3-api': (root) => {
     const backend = combinedText(root, 'octofit-tracker/backend/src');

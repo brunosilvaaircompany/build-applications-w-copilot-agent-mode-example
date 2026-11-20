@@ -95,14 +95,16 @@ export async function suggestWorkouts(userEmail: string) {
     strength: 'strength',
   };
   const focus = recentActivity ? focusByActivity[recentActivity.type] : user.fitnessGoal;
-  let workouts = await Workout.find({ focus }).sort({ title: 1 }).lean();
-  if (!workouts.length && focus !== user.fitnessGoal) {
-    workouts = await Workout.find({ focus: user.fitnessGoal }).sort({ title: 1 }).lean();
+  let recommendationFocus = focus;
+  let workouts = await Workout.find({ focus: recommendationFocus }).sort({ title: 1 }).lean();
+  if (!workouts.length && recommendationFocus !== user.fitnessGoal) {
+    recommendationFocus = user.fitnessGoal;
+    workouts = await Workout.find({ focus: recommendationFocus }).sort({ title: 1 }).lean();
   }
 
-  const reason = recentActivity
-    ? `Sua atividade recente de ${recentActivity.type === 'run' ? 'corrida' : recentActivity.type === 'cycle' ? 'ciclismo' : recentActivity.type === 'strength' ? 'força' : 'caminhada'} indica esse foco.`
-    : `Esta sugestão corresponde à sua meta de ${user.fitnessGoal}.`;
+  const reason = !recentActivity || recommendationFocus !== focus
+    ? `Esta sugestão corresponde à sua meta de ${user.fitnessGoal}.`
+    : `Sua atividade recente de ${recentActivity.type === 'run' ? 'corrida' : recentActivity.type === 'cycle' ? 'ciclismo' : recentActivity.type === 'strength' ? 'força' : 'caminhada'} indica esse foco.`;
   return workouts.map((workout) => ({ ...workout, reason }));
 }
 
